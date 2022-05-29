@@ -1,0 +1,13 @@
+[X] Unit tests setup [doctest | catch2]
+[X] Test EntityManager
+[X] Test ComponentArray
+[X] Test ComponentManager
+[X] ArrayComponent: id=0 <=> composant a recyclé
+
+[X] Implement Entity signature return
+[X] Implement ECS wrapper (delete an entity and all its components etc..)
+    [X] Implement entity signature filling on component addition
+[X] Implement Entity filtering based on signature
+[ ] Implement Systems structure ?
+[ ] Implement a 'Garbage Collector' of some sort -> avoid keeping too many entities
+[ ] Filter with a single argument: use ComponentArray.componentToEntity vector
