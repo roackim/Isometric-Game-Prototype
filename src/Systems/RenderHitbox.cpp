@@ -1,16 +1,28 @@
-#include "Physic.h"
+#include "RenderHitbox.h"
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-#include "Components/Core/Movement.hpp"
+#include "Components/Movement.hpp"
+#include "SECS/ECS.hpp"
 
 sf::Vector2f iso::cartesianToIsomectric(sf::Vector3f v)
 { 
     return v.x * iso::vux + v.y * iso::vuy + v.z * iso::vuz;
 }
 
-void RenderHitbox(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states)
+
+void ecs::system::renderHitboxes(sf::RenderTarget& target, sf::RenderStates states)
+{
+    auto entities = ecs::entity::filter<Hitbox>();
+
+    for (auto& eid : entities)
+    {
+        renderHitbox(ecs::component::get<Hitbox>(eid), target, states);
+    }
+}
+
+static void ecs::system::renderHitbox(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states)
 {
     
     const sf::Vector3f& d = hitbox.dimensions;

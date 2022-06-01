@@ -8,6 +8,7 @@ struct Movement
     sf::Vector3f velocity;
     sf::Vector3f acceleration;
     
+    Movement() {}
     Movement(sf::Vector3f v_, sf::Vector3f a_=sf::Vector3f(0,0,0))
     : velocity(v_)
     , acceleration(a_) {}

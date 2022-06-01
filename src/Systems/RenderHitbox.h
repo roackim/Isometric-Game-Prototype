@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "Components/Core/Movement.hpp"
+#include "Components/Movement.hpp"
 
 
 namespace iso
@@ -19,4 +19,9 @@ namespace iso
     
 }
 
-void RenderHitbox(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states);
+
+namespace ecs::system
+{
+    void renderHitboxes(sf::RenderTarget& target, sf::RenderStates states);
+    static void renderHitbox(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states);
+}
