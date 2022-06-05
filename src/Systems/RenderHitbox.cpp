@@ -18,11 +18,12 @@ void ecs::system::renderHitboxes(sf::RenderTarget& target, sf::RenderStates stat
 
     for (auto& eid : entities)
     {
-        renderHitbox(ecs::component::get<Hitbox>(eid), target, states);
+        // renderHitboxWire(ecs::component::get<Hitbox>(eid), target, states);
+        renderHitboxFull(ecs::component::get<Hitbox>(eid), target, states);
     }
 }
 
-static void ecs::system::renderHitbox(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states)
+void ecs::system::renderHitboxWire(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states)
 {
     
     const sf::Vector3f& d = hitbox.dimensions;
@@ -77,4 +78,75 @@ static void ecs::system::renderHitbox(const Hitbox& hitbox, sf::RenderTarget& ta
     target.draw(shadow, states);
     target.draw(hitboxVertex, states);
     
+}
+
+void ecs::system::renderHitboxFull(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states)
+{
+    const sf::Vector3f& d = hitbox.dimensions;
+    sf::Vector3f start = hitbox.position - sf::Vector3f(d.x, d.y, 0)/2.f;
+    
+    // create a quad
+    sf::VertexArray quad(sf::Quads, 12);
+    
+    quad[0].position  = iso::cartesianToIsomectric(start + sf::Vector3f(d.x, d.y,   0));
+    quad[1].position  = iso::cartesianToIsomectric(start + sf::Vector3f(  0, d.y,   0));
+    quad[2].position  = iso::cartesianToIsomectric(start + sf::Vector3f(  0, d.y, d.z));
+    quad[3].position  = iso::cartesianToIsomectric(start + sf::Vector3f(d.x, d.y, d.z));
+    
+    quad[4].position  = iso::cartesianToIsomectric(start + sf::Vector3f(d.x, d.y, d.z));
+    quad[5].position  = iso::cartesianToIsomectric(start + sf::Vector3f(  0, d.y, d.z));
+    quad[6].position  = iso::cartesianToIsomectric(start + sf::Vector3f(  0,   0, d.z));
+    quad[7].position  = iso::cartesianToIsomectric(start + sf::Vector3f(d.x,   0, d.z));
+    
+    quad[8].position   = iso::cartesianToIsomectric(start + sf::Vector3f(d.x, d.y,   0));
+    quad[9].position   = iso::cartesianToIsomectric(start + sf::Vector3f(d.x, d.y, d.z));
+    quad[10].position  = iso::cartesianToIsomectric(start + sf::Vector3f(d.x,   0, d.z));
+    quad[11].position  = iso::cartesianToIsomectric(start + sf::Vector3f(d.x,   0,   0));
+    
+    quad[0].color = sf::Color(0x222222FF);
+    quad[1].color = sf::Color(0x222222FF);
+    quad[2].color = sf::Color(0x222222FF);
+    quad[3].color = sf::Color(0x222222FF);
+    
+    quad[4].color = sf::Color(0xFFFFFFFF);
+    quad[5].color = sf::Color(0xFFFFFFFF);
+    quad[6].color = sf::Color(0xFFFFFFFF);
+    quad[7].color = sf::Color(0xFFFFFFFF);
+    
+    quad[8].color  = sf::Color(0x999999ff);
+    quad[9].color  = sf::Color(0x999999ff);
+    quad[10].color = sf::Color(0x999999ff);
+    quad[11].color = sf::Color(0x999999ff);
+    
+
+    sf::VertexArray shadow(sf::Quads, 4);
+    sf::Vector3f start2 = sf::Vector3f(start.x, start.y, 0);
+    
+    shadow[0].position  = iso::cartesianToIsomectric(start2 + sf::Vector3f(d.x, d.y,   0));
+    shadow[1].position  = iso::cartesianToIsomectric(start2 + sf::Vector3f(  0, d.y,   0));
+    shadow[2].position  = iso::cartesianToIsomectric(start2 + sf::Vector3f(  0,   0,   0));
+    shadow[3].position  = iso::cartesianToIsomectric(start2 + sf::Vector3f(d.x,   0,   0));
+    
+    shadow[0].color = sf::Color(0x222222FF);
+    shadow[1].color = sf::Color(0x222222FF);
+    shadow[2].color = sf::Color(0x222222FF);
+    shadow[3].color = sf::Color(0x222222FF);
+    
+    // sf::VertexArray shadow(sf::LineStrip, 5);
+    // sf::Vector3f start2 = sf::Vector3f(start.x, start.y, 0);
+    
+    // shadow[0].position  = iso::cartesianToIsomectric(start2 + sf::Vector3f(d.x, d.y,   0));
+    // shadow[1].position  = iso::cartesianToIsomectric(start2 + sf::Vector3f(  0, d.y,   0));
+    // shadow[2].position  = iso::cartesianToIsomectric(start2 + sf::Vector3f(  0,   0,   0));
+    // shadow[3].position  = iso::cartesianToIsomectric(start2 + sf::Vector3f(d.x,   0,   0));
+    // shadow[4].position  = iso::cartesianToIsomectric(start2 + sf::Vector3f(d.x, d.y,   0));
+    
+    // shadow[0].color  = sf::Color::Red;
+    // shadow[1].color  = sf::Color::White;
+    // shadow[2].color  = sf::Color::Blue;
+    // shadow[3].color  = sf::Color::White;
+    // shadow[4].color  = sf::Color::Cyan;
+    
+    target.draw(shadow, states);
+    target.draw(quad, states);
 }

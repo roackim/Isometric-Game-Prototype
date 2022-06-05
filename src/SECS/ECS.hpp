@@ -62,6 +62,7 @@ namespace ecs::entity
         
         return ECS::get_ecs().em.filter(s);
     }
+    
 }
 
 namespace ecs::component

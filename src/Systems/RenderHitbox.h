@@ -23,5 +23,6 @@ namespace iso
 namespace ecs::system
 {
     void renderHitboxes(sf::RenderTarget& target, sf::RenderStates states);
-    static void renderHitbox(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states);
+    void renderHitboxWire(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states);
+    void renderHitboxFull(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states);
 }

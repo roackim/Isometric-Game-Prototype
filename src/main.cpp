@@ -11,8 +11,10 @@
 #include "Components/Controller.hpp"
 
 #include "Systems/RenderHitbox.h"
-#include "Systems/PlayerController.h"
-#include "Systems/moveEntities.h"
+#include "Systems/Controller.h"
+#include "Systems/Movement.h"
+#include "Systems/Collision.h"
+#include "Systems/Renderer.h"
 
 const uint SCALE = 3;
 const uint WIN_WIDTH = 800;
@@ -24,7 +26,7 @@ int main(int argc, char* argv[])
 
     // create the window
     sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "Physic Prototype");
-    window.setFramerateLimit(144);
+    window.setFramerateLimit(120);
 
     // used to render at low res
     sf::Sprite render_sprite;
@@ -42,24 +44,36 @@ int main(int argc, char* argv[])
     uint e1 = ecs::entity::create();
     uint e2 = ecs::entity::create();
     uint e3 = ecs::entity::create();
+    
+    uint e4 = ecs::entity::create();
+    uint e5 = ecs::entity::create();
+    
+    uint e6 = ecs::entity::create();
+    uint e7 = ecs::entity::create();
 
-    ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(5, 2, 2)), e1);
-    ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(7, 6, 1)), e2);
-    ecs::component::add(Hitbox(sf::Vector3f(2, 2, 2), sf::Vector3f(15, 4, 3)), e3);
+    ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(5, 2, 0)), e1);
+    ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(7, 6, 0)), e2);
+    ecs::component::add(Hitbox(sf::Vector3f(2, 4, 2), sf::Vector3f(10, 4, 0)), e3);
+    ecs::component::add(Hitbox(sf::Vector3f(2, 4, 0.5), sf::Vector3f(14, 6, 0)), e4);
+    ecs::component::add(Hitbox(sf::Vector3f(2, 2, 5), sf::Vector3f(12, 2, 0)), e5);
     
-    ecs::component::add<Movement>(e2);
-    ecs::component::add<Controller>(e2);
+    ecs::component::add(Hitbox(sf::Vector3f(0.5, 1, 0.5), sf::Vector3f(5, -4, 0)), e6);
+    ecs::component::add(Hitbox(sf::Vector3f(1, 3, 0.5), sf::Vector3f(20, 8, 0)), e7);
     
+    
+    
+    std::cout << e1 << ", " << e3 << std::endl;
+
+    ecs::component::add<Movement>(e6);
+    ecs::component::add<Controller>(e6);
+
     ecs::component::add<Movement>(e1);
     ecs::component::add<Controller>(e1);
-    
-    // auto var = ecs.getComponent<Hitbox>(e1);
-    // var.dimensions.x = 2;
-    // auto var2 = ecs.getComponent<Hitbox>(e1);
-    // var2.dimensions.x = 3;
-    // auto var3 = ecs.getComponent<Hitbox>(e1);
-    // var3.dimensions.x = 3;
-    
+
+    // ecs::component::add<Controller>(e2);
+    // ecs::component::add<Movement>(e2);
+
+
     while (window.isOpen())
     {
         dt = clock.restart();
@@ -77,15 +91,15 @@ int main(int argc, char* argv[])
                     return(0);
                 }
             }
-            
+
             static sf::Clock swap_timer;
-            
+
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
             {
-                
+
                 if (swap_timer.getElapsedTime() > sf::milliseconds(100))
                 {
-                    if (ecs::entity::has<Controller>(e2)) 
+                    if (ecs::entity::has<Controller>(e2))
                     {
                         std::cout << "removing controller component to #" << e2 << std::endl;
                         ecs::component::remove<Controller>(e2);
@@ -94,7 +108,7 @@ int main(int argc, char* argv[])
                     else
                     {
                         std::cout << "adding   controller component to #" << e2 << std::endl;
-                        ecs::component::add<Controller>(e2);                
+                        ecs::component::add<Controller>(e2);
                     }
                     swap_timer.restart();
                 }
@@ -109,29 +123,35 @@ int main(int argc, char* argv[])
                 float growth = 0.1f;
                 ecs::component::get<Hitbox>(e3).dimensions += sf::Vector3f(-growth, -growth, -growth);
             }
-            
+
             ecs::system::moveWithWASD(event);
-            
+
         }
-        
-        ecs::system::moveEntitites(dt);
-        
+
+        ecs::system::computeVelocities(dt);
+        ecs::system::applyCollisions();
+        ecs::system::moveEntitites();
+
 
         // drawing
         window.clear(sf::Color::Black);
         render_texture.clear(sf::Color::Black);
         render_texture.display();
+
+        ecs::system::renderer::sortRenderable();
+        ecs::system::renderer::renderEntities(render_texture, sf::RenderStates());
         
-        ecs::system::renderHitboxes(render_texture, sf::RenderStates());
-        
-        
+
+        // ecs::system::renderHitboxes(render_texture, sf::RenderStates());
+
+
         render_sprite.setTexture(render_texture.getTexture());
         render_sprite.setScale(SCALE, SCALE);
         window.draw(render_sprite);
-        
+
         // end the current frame
         window.display();
-        
+
     }
 
     return 0;
