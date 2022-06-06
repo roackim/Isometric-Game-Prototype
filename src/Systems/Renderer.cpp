@@ -56,7 +56,7 @@ static void computeHitboxProjectionBounds(const Hitbox& a, sf::Vector2f& start, 
     auto al = sf::Vector3f(a.position.x - a.dimensions.x/2, a.position.y + a.dimensions.y/2, 0.f);
     auto ar = sf::Vector3f(a.position.x + a.dimensions.x/2, a.position.y - a.dimensions.y/2, 0.f);
     auto at = sf::Vector3f(a.position.x - a.dimensions.x/2, a.position.y - a.dimensions.y/2, a.position.z + a.dimensions.z); 
-    auto ab = sf::Vector3f(a.position.x + a.dimensions.x/2, a.position.y + a.dimensions.y/2, 0.f);
+    auto ab = sf::Vector3f(a.position.x + a.dimensions.x/2, a.position.y + a.dimensions.y/2, a.position.z);
     
     // px: Isometric projection in pixels on x axis
     // py: Isometric projection in pixels on y axis
@@ -100,13 +100,61 @@ static int computeRelativePosition(const Hitbox& a, const Hitbox& b)
     computeHitboxProjectionBounds(a, a_start, a_end);
     computeHitboxProjectionBounds(b, b_start, b_end);
     
-    if (testOverlap(a_start, a_end, b_start, b_end))
+    if (not testOverlap(a_start, a_end, b_start, b_end))
     {
-        // necessitate more computation
-        return 1;
+        std::cout << std::endl;
+        return -1;   
     }
     
-    return 0;
+    // TODO add z axis differential
+            
+    float dxf, dyf, dzf; // difference, between nearest edges 
+    float dxb, dyb, dzb; // difference, between furthest edges 
+    
+    dxf = (a.position.x - a.dimensions.x/2) - (b.position.x + b.dimensions.x/2);
+    dxb = (a.position.x + a.dimensions.x/2) - (b.position.x - b.dimensions.x/2);  
+    
+    dyf = (a.position.y - a.dimensions.y/2) - (b.position.y + b.dimensions.y/2);
+    dyb = (a.position.y + a.dimensions.y/2) - (b.position.y - b.dimensions.y/2);
+    
+    // fixes glitch of almost superposition
+    if (dxf == 0.0f) dxf = dxb;
+    if (dxb == 0.0f) dxb = dxf;
+    if (dyf == 0.0f) dyf = dyb;
+    if (dyb == 0.0f) dyb = dyf;
+    
+    int sx = signSum(dxf, dxb);
+    int sy = signSum(dyf, dyb);
+    
+    if (math::abs(sx+sy) == 2) // can discriminate
+    {
+        if (sx ==  2) return 2;
+        if (sx == -2) return 1;
+        if (sy ==  2) return 2;
+        if (sy == -2) return 1;
+    }
+    else if ((sx + sy) == 4)
+    {
+        return 2;
+    }
+    else if ((sx + sy) == -4) // cannot discriminate with base
+    {
+        return 1;
+    }
+    else if ((sx+sy) == 0)
+    {
+        float sdx = math::closestToZero(dxf, dxb);
+        float sdy = math::closestToZero(dyf, dyb);
+        
+        if (math::abs(sdx / sdy) > 1) return 1;
+        return 2;
+    }
+    else if (sx == 0 and sy == 0) [[unlikely]]// both shape are superposed
+    {
+        // TODO
+        return 1;
+    }
+    return 2;
 }
 
 
@@ -131,7 +179,7 @@ void ecs::system::renderer::sortRenderable()
             const Hitbox a = ecs::component::get<Hitbox>(entities[smallestindex]);
             const Hitbox b = ecs::component::get<Hitbox>(entities[j]);
             
-            std::cout << entities[smallestindex] << " against " << entities[j] << ": " << std::endl;
+            std::cout << entities[smallestindex] << " against " << entities[j] << ": ";
             
             int res = computeRelativePosition(a, b);
             if (res == 2)

@@ -132,7 +132,6 @@ int main(int argc, char* argv[])
         ecs::system::applyCollisions();
         ecs::system::moveEntitites();
 
-
         // drawing
         window.clear(sf::Color::Black);
         render_texture.clear(sf::Color::Black);
