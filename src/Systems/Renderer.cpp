@@ -7,71 +7,16 @@
 #include "Components/Movement.hpp"
 
 #include "Systems/RenderHitbox.h"
+#include "Core/Isometric.h"
 
-
-static bool inFrontOf(const Hitbox& a, const Hitbox& b);
 
 void ecs::system::renderer::renderEntities(sf::RenderTarget& target, sf::RenderStates states)
 {
-    for (auto e : entities)
+    for (auto e : renderer::entities)
     {
-        ecs::system::renderHitboxFull(ecs::component::get<Hitbox>(e), target, states);
-        // ecs::system::renderHitboxWire(ecs::component::get<Hitbox>(e), target, states);
-        
-    }
-}
 
-void ecs::system::renderer::sortRenderable()
-{
-    entities = ecs::entity::filter<Hitbox>();
-    
-    std::cout << " ----[" << entities.size() << "]---- " << std::endl;
-    
-    std::cout << "[";
-    for (auto v : entities)
-    {
-        std::cout << v << " ";
-    }
-    std::cout << "]" << std::endl;
-    
-    for (uint i = 0; i < entities.size(); ++i)
-    {
-        
-        
-        uint smallest = entities[i];
-        uint smallestindex = i;
-            
-        for (uint j = i+1; j < entities.size(); ++j)
-        {
-            uint test = entities[j];
-            
-            // Comparison
-            const Hitbox a = ecs::component::get<Hitbox>(entities[smallestindex]);
-            const Hitbox b = ecs::component::get<Hitbox>(entities[j]);
-            
-            std::cout << entities[smallestindex] << " against " << entities[j] << ": ";
-            if (inFrontOf(a, b))
-            {
-                smallest = test;
-                smallestindex = j;
-                std::cout << "in front" << std::endl;
-            }
-            else std::cout << "behind" << std::endl;
-        }
-        
-        if (smallestindex != i) [[unlikely]]
-        {
-            uint tmp = entities[i];
-            entities[i] = smallest;
-            entities[smallestindex] = tmp;
-        }
-        
-        std::cout << "[";
-        for (auto v : entities)
-        {
-            std::cout << v << " ";
-        }
-        std::cout << "]" << std::endl;
+        ecs::system::renderHitboxFull(ecs::component::get<Hitbox>(e), target, states);
+        // ecs::system::renderHitboxWire(ecs::component::get<Hitbox>(e), target, states);   
     }
 }
 
@@ -96,64 +41,141 @@ static bool almostZero(float f)
     return res;  
 }
 
-// returns false if A is in front of B
-static bool inFrontOf(const Hitbox& a, const Hitbox& b)
-{   
+// start: top left corner
+// end: bottom right corner
+static void computeHitboxProjectionBounds(const Hitbox& a, sf::Vector2f& start, sf::Vector2f& end)
+{
+    //                          start +  at
+    // al: a's leftmost point          _-''-_
+    // ar: a's rightmost point        |-_  _-|
+    // at: a's top point              |  `|  |
+    // ab: a's bottom point        al '-_ |_-' ar
+    //                                   ab  + end
     
-    float dxf, dyf, dzf; // difference, between nearest edges 
-    float dxb, dyb, dzb; // difference, between furthest edges 
+    // compute outmost points
+    auto al = sf::Vector3f(a.position.x - a.dimensions.x/2, a.position.y + a.dimensions.y/2, 0.f);
+    auto ar = sf::Vector3f(a.position.x + a.dimensions.x/2, a.position.y - a.dimensions.y/2, 0.f);
+    auto at = sf::Vector3f(a.position.x - a.dimensions.x/2, a.position.y - a.dimensions.y/2, a.position.z + a.dimensions.z); 
+    auto ab = sf::Vector3f(a.position.x + a.dimensions.x/2, a.position.y + a.dimensions.y/2, 0.f);
     
-    dxf = (a.position.x - a.dimensions.x/2) - (b.position.x + b.dimensions.x/2);
-    dxb = (a.position.x + a.dimensions.x/2) - (b.position.x - b.dimensions.x/2);  
+    // px: Isometric projection in pixels on x axis
+    // py: Isometric projection in pixels on y axis
     
-    dyf = (a.position.y - a.dimensions.y/2) - (b.position.y + b.dimensions.y/2);
-    dyb = (a.position.y + a.dimensions.y/2) - (b.position.y - b.dimensions.y/2);
+    // compute their projections
+    float alpx = isometric::getProjection(al).x;
+    float arpx = isometric::getProjection(ar).x;
     
-    // fixes glitch of almost superposition
-    if (dxf == 0.0f) dxf = dxb;
-    if (dxb == 0.0f) dxb = dxf;
-    if (dyf == 0.0f) dyf = dyb;
-    if (dyb == 0.0f) dyb = dyf;
+    float atpy = isometric::getProjection(at).y;
+    float abpy = isometric::getProjection(ab).y;
     
+    start = sf::Vector2f(alpx, atpy);
+    end = sf::Vector2f(arpx, abpy);
     
-    int sx = signSum(dxf, dxb);
-    int sy = signSum(dyf, dyb);
-    
-    std::cout << "\t" << sx << " " << sy << " \t ";
-    
-    if (math::abs(sx+sy) == 2) // can discriminate
-    {
-        if (sx ==  2) return true;
-        if (sx == -2) return false;
-        if (sy ==  2) return true;
-        if (sy == -2) return false;
-    }
-    else if ((sx + sy) == 4)
-    {
-        return true;
-    }
-    else if ((sx + sy) == -4) // cannot discriminate with base
-    {
-        return false;
-    }
-    else if ((sx+sy) == 0)
-    {
-        float sdx = math::closestToZero(dxf, dxb);
-        float sdy = math::closestToZero(dyf, dyb);
-        
-        // if (sx < 0) math::swap(sdx, mdx);
-        // if (sy < 0) math::swap(sdy, mdy);
-                
-        std::cout << math::abs(sdx / sdy) << "\t" ;
-        // std::cout << dxf << "\t" << dxb << "\t" << dyf << "\t" << dyb << " ";
-        
-        if (math::abs(sdx / sdy) > 1) return false;
-        return true;
-    }
-    else if (sx == 0 and sy == 0) [[unlikely]]// both shape are superposed
-    {
-        // TODO
-        return false;
-    }
-    return true;
+    start.x = alpx;
 }
+
+
+static bool testOverlap(sf::Vector2f a_start, sf::Vector2f a_end, sf::Vector2f b_start, sf::Vector2f b_end)
+{
+    if ((b_start.x < a_end.x) and
+        (b_start.y < a_end.y) and
+        (b_end.x > a_start.x) and
+        (b_end.y > a_start.y))
+        return true;
+    return false;
+}
+
+
+//  0: A and B are appart
+// returns [0, 1, 2]
+//  1: A is Behind B 
+//  2: A is in front of B
+static int computeRelativePosition(const Hitbox& a, const Hitbox& b)
+{   
+    sf::Vector2f a_start = {0,0};
+    sf::Vector2f a_end   = {0,0};
+    sf::Vector2f b_start = {0,0};
+    sf::Vector2f b_end   = {0,0};
+    
+    computeHitboxProjectionBounds(a, a_start, a_end);
+    computeHitboxProjectionBounds(b, b_start, b_end);
+    
+    if (testOverlap(a_start, a_end, b_start, b_end))
+    {
+        // necessitate more computation
+        return 1;
+    }
+    
+    return 0;
+}
+
+
+void ecs::system::renderer::sortRenderable()
+{
+    entities = ecs::entity::filter<Hitbox>();
+    
+    std::cout << " ----[" << entities.size() << "]---- " << std::endl;
+    
+    for (uint i = 0; i < entities.size(); ++i)
+    {
+        
+        
+        uint smallest = entities[i];
+        uint smallestindex = i;
+            
+        for (uint j = i+1; j < entities.size(); ++j)
+        {
+            uint test = entities[j];
+            
+            // Comparison
+            const Hitbox a = ecs::component::get<Hitbox>(entities[smallestindex]);
+            const Hitbox b = ecs::component::get<Hitbox>(entities[j]);
+            
+            std::cout << entities[smallestindex] << " against " << entities[j] << ": " << std::endl;
+            
+            int res = computeRelativePosition(a, b);
+            if (res == 2)
+            {
+                smallest = test;
+                smallestindex = j;
+                std::cout << "in front" << std::endl;
+            }
+            else if (res == 1 ) std::cout << "behind" << std::endl;
+            else if (res == 0 ) std::cout << "none" << std::endl;
+        }
+        
+        if (smallestindex != i) [[unlikely]]
+        {
+            uint tmp = entities[i];
+            entities[i] = smallest;
+            entities[smallestindex] = tmp;
+        }
+    }
+}
+
+// TODO implement spacial groups
+// static void ecs::system::createEntityGroups()
+// {
+//     std::vector<uint> entities = ecs::entity::filter<Hitbox>();
+    
+//     auto& map = renderer::entity_to_group_map;
+    
+//     for (uint e1 : entities)
+//     {
+//         for (uint e2 : entities)
+//         {
+//             auto& h1 = ecs::component::get<Hitbox>(e1);
+//             auto& h2 = ecs::component::get<Hitbox>(e2);
+            
+//             if (computeRelativePosition(h1, h2) != 0) // entities must be sorted in same group
+//             {
+//                 auto itr = map.find(e2);
+//                 if ( itr != map.end()) // entity 2 is already part of a group
+//                 {
+//                     ; // TODO
+//                 }
+//             }
+//         }
+//     }
+//     // renderer::entity_groups.push_back(entities);
+// }

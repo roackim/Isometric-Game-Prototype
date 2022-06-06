@@ -52,13 +52,13 @@ int main(int argc, char* argv[])
     uint e7 = ecs::entity::create();
 
     ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(5, 2, 0)), e1);
-    ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(7, 6, 0)), e2);
+    // ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(7, 6, 0)), e2);
     ecs::component::add(Hitbox(sf::Vector3f(2, 4, 2), sf::Vector3f(10, 4, 0)), e3);
-    ecs::component::add(Hitbox(sf::Vector3f(2, 4, 0.5), sf::Vector3f(14, 6, 0)), e4);
+    // ecs::component::add(Hitbox(sf::Vector3f(2, 4, 0.5), sf::Vector3f(14, 6, 0)), e4);
     ecs::component::add(Hitbox(sf::Vector3f(2, 2, 5), sf::Vector3f(12, 2, 0)), e5);
     
-    ecs::component::add(Hitbox(sf::Vector3f(0.5, 1, 0.5), sf::Vector3f(5, -4, 0)), e6);
-    ecs::component::add(Hitbox(sf::Vector3f(1, 3, 0.5), sf::Vector3f(20, 8, 0)), e7);
+    // ecs::component::add(Hitbox(sf::Vector3f(0.5, 1, 0.5), sf::Vector3f(5, -4, 0)), e6);
+    // ecs::component::add(Hitbox(sf::Vector3f(1, 3, 0.5), sf::Vector3f(20, 8, 0)), e7);
     
     
     
