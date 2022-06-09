@@ -63,16 +63,15 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
     dzf = (b.position.z) - (a.position.z + a.dimensions.z);
     dzb = (b.position.z + b.dimensions.z) - (a.position.z);
     if (v.z < 0.f) math::swap(dzf, dzb);
-    
 
     // used to compute time of collision
     float dtxf, dtyf, dtzf; // time of collision for each axis 
     float dtxb, dtyb, dtzb; // time of leaving for each axis
     
-    // avoid division by 0
-    if (v.x == 0.f) v.x = 0.00000001f;
-    if (v.y == 0.f) v.y = 0.00000001f;
-    if (v.z == 0.f) v.z = 0.00000001f;
+    // avoid division by 0              // std::numeric_limits<T>::epsilon()
+    if (v.x == 0.f) v.x = math::sign(v.x) * 0.000000001f;
+    if (v.y == 0.f) v.y = math::sign(v.y) * 0.000000001f;
+    if (v.z == 0.f) v.z = math::sign(v.z) * 0.000000001f;
     
     // compute time of collision per axis
     dtxf = dxf / v.x; // x
@@ -91,22 +90,40 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
     // cases where there is no collision
     if ((dtentry >= dtexit) 
     or ((dtxf < 0.f) and (dtyf < 0.f) and (dtzf < 0.f)) 
-    or (dtxf >= 1.f) // going to collide but not this frame 
-    or (dtyf >= 1.f)
-    or (dtzf >= 1.f)
+    or (dtxf > 1.f) // going to collide but not this frame 
+    or (dtyf > 1.f)
+    or (dtzf > 1.f)
     )
     {
         return false;
     }
     else // a collision happened
     {
+        std::cout << "------------------------" << std::endl;
+        std::cout << "dt: " << dtentry << "\t" << dtexit << std::endl;
+        std::cout << "ds: " << dxf << "\t" << dyf << "\t" << dzf << std::endl;
+        std::cout << "vel: " << v.x << "\t" << v.y << "\t" << v.z << std::endl;
+        std::cout << dtxf << "\t" << dtyf << "\t" << dtzf << "\t";
+        // std::cout << dtentry << std::endl;
         // collision response
         int i = math::maxindex(dtxf, dtyf, dtzf);
         
         // only restraint one axis
-        if      (i == 1) v.x *= (dtentry);// - 0.001f); // - 0.0001 -> avoid staying in collision state after resolution
-        else if (i == 2) v.y *= (dtentry);// - 0.001f);
-        else if (i == 3) v.z *= (dtentry);// - 0.001f);
+        if      (i == 1) 
+        {
+            v.x *= (dtentry);// - 0.001f); // - 0.0001 -> avoid staying in collision state after resolution
+            std::cout << "New v.x " << v.x << std::endl;
+        }
+        else if (i == 2) 
+        {
+            v.y *= (dtentry);// - 0.001f);
+            std::cout << "New v.y " << v.y << std::endl;
+        }
+        else if (i == 3) 
+        {
+            v.z *= (dtentry);// - 0.001f);
+            std::cout << "New v.z " << v.z << std::endl;
+        }
         
         return true;
     }

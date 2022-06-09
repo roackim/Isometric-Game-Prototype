@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     // ecs::component::add(Hitbox(sf::Vector3f(0.5, 1, 0.5), sf::Vector3f(5, -4, 0)), e6);
     // ecs::component::add(Hitbox(sf::Vector3f(1, 3, 0.5), sf::Vector3f(20, 8, 0)), e7);
     
-    
+    // ecs::component::get<Hitbox>(e1).mode = true; // testing
     
     std::cout << e1 << ", " << e3 << std::endl;
 

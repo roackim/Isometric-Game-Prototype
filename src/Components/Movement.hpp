@@ -20,6 +20,8 @@ struct Hitbox
     sf::Vector3f dimensions;
     sf::Vector3f position;
     
+    bool mode = false;
+    
     Hitbox(sf::Vector3f d_, sf::Vector3f p_)
     : dimensions(d_), position(p_) {}
 };

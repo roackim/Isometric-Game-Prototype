@@ -143,6 +143,24 @@ void ecs::system::renderHitboxFull(const Hitbox& hitbox, sf::RenderTarget& targe
     // shadow[3].color  = sf::Color::White;
     // shadow[4].color  = sf::Color::Cyan;
     
+    if (hitbox.mode == true)
+    {
+        auto color = sf::Color(0x00000000);
+        
+        quad[0].color  = color;
+        quad[1].color  = color;
+        quad[2].color  = color;
+        quad[3].color  = color;
+        quad[4].color  = color;
+        quad[5].color  = color;
+        quad[6].color  = color;
+        quad[7].color  = color;
+        quad[8].color  = color;
+        quad[9].color  = color;
+        quad[10].color = color;
+        quad[11].color = color;
+    }
+    
     target.draw(shadow, states);
-    target.draw(quad, states);
+    target.draw(quad, sf::BlendNone);
 }

@@ -1,15 +1,18 @@
 #pragma once
 
 #include <SFML/System.hpp>
+#include "Core/Vector.h"
 #include <cmath>
 
 namespace math
 {
-bool sign(float f);
+bool signbool(float f);
+
+float sign(float f);
 
 float abs(float f);
 
-float dist(const sf::Vector3f& a, const sf::Vector3f& b);
+float dist(const v3f& a, const v3f& b);
 
 void swap(float& a, float&b);
 
@@ -27,10 +30,10 @@ float min(const float a, const float b, const float c);
 
 float maxindex(const float a, const float b, const float c);
 
-float CosAngle(sf::Vector2f v, sf::Vector2f k);
+float CosAngle(v2f v, v2f k);
 
-float dotProduct(sf::Vector2f v, sf::Vector2f k);
+float dotProduct(v2f v, v2f k);
 
-float norm(sf::Vector2f v);
+float norm(v2f v);
 
 }

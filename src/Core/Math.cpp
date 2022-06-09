@@ -7,9 +7,15 @@
 namespace math
 {
 
-    bool sign(float f)
+    bool signbool(float f)
     {
         return f >= 0.f;   
+    }
+    
+    float sign(float f)
+    {
+        if (f >= 0.f) return 1.f;
+        return -1.f;   
     }
 
     float abs(float f)
@@ -57,26 +63,23 @@ namespace math
 
     float max(const float a, const float b, const float c)
     {
-        if      (a > b and a > c) return a;
-        else if (b > a and b > c) return b;
-        else if (c > a and c > b) return c;
-        return a;
+        if      (a >= b and a >= c) return a;
+        else if (b >= a and b >= c) return b;
+        return c;
     }
 
     float min(const float a, const float b, const float c)
     {
-        if      (a < b and a < c) return a;
-        else if (b < a and b < c) return b;
-        else if (c < a and c < b) return c;
-        return a;
+        if      (a <= b and a <= c) return a;
+        else if (b <= a and b <= c) return b;
+        return c;
     }
 
     float maxindex(const float a, const float b, const float c)
     {
-        if      (a > b and a > c) return 1;
-        else if (b > a and b > c) return 2;
-        else if (c > a and c > b) return 3;
-        return 1;
+        if      (a >= b and a >= c) return 1;
+        else if (b >= a and b >= c) return 2;
+        return 3;
     }
 
 
