@@ -1,6 +1,7 @@
 #include "Collision.h"
 #include "SECS/ECS.hpp"
 
+#include <cmath>
 
 #include "Components/Movement.hpp"
 #include "Core/Math.h"
@@ -26,6 +27,8 @@ void ecs::system::applyCollisions() // TODO implement range checks, to avoid che
         auto& h1  = ecs::component::get<Hitbox>(e1);
         for (uint e2 : v2)
         {
+            if (e1 == e2) continue; // avoid checking collisions against self
+            
             auto& h2  = ecs::component::get<Hitbox>(e2);
             
             if (ecs::entity::has<Movement>(e2)) // both entities are moving
@@ -35,6 +38,7 @@ void ecs::system::applyCollisions() // TODO implement range checks, to avoid che
             }
             else // second entity is static
             {
+                std::cout << ">>> " << e1 << " against " << e2 << " <<<" <<std::endl;
                 sweptAABB(h1, mv.delta, h2, dist);
             }   
         }
@@ -47,7 +51,14 @@ void ecs::system::applyCollisions() // TODO implement range checks, to avoid che
 static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
 {
     float dxf, dyf, dzf; // difference, between nearest edges 
-    float dxb, dyb, dzb; // difference, between furthest edges 
+    float dxb, dyb, dzb; // difference, between furthest edges
+    
+    // TODO please fix this, this is horrible
+    // shrinks the slightest possible the hitbox of the moving entity to avoid bound bug
+    v3f buff = a.dimensions;
+    a.dimensions *= (1.f - std::numeric_limits<float>::epsilon());
+    
+    std::cout << a.dimensions.x << std::endl;
     
     // a is considered on the left by default
     dxf = (b.position.x - b.dimensions.x/2) - (a.position.x + a.dimensions.x/2);
@@ -63,15 +74,10 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
     dzf = (b.position.z) - (a.position.z + a.dimensions.z);
     dzb = (b.position.z + b.dimensions.z) - (a.position.z);
     if (v.z < 0.f) math::swap(dzf, dzb);
-
+    
     // used to compute time of collision
     float dtxf, dtyf, dtzf; // time of collision for each axis 
     float dtxb, dtyb, dtzb; // time of leaving for each axis
-    
-    // avoid division by 0              // std::numeric_limits<T>::epsilon()
-    if (v.x == 0.f) v.x = math::sign(v.x) * 0.000000001f;
-    if (v.y == 0.f) v.y = math::sign(v.y) * 0.000000001f;
-    if (v.z == 0.f) v.z = math::sign(v.z) * 0.000000001f;
     
     // compute time of collision per axis
     dtxf = dxf / v.x; // x
@@ -87,44 +93,52 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
     float dtentry = math::max(dtxf, dtyf, dtzf);
     float dtexit  = math::min(dtxb, dtyb, dtzb);
     
+    std::cout << "dt: " << dtentry  << "\t\t" << dtexit   << std::endl;
+    std::cout << "df: " << dxf      << "\t\t" << dyf      << "\t\t" << dzf << std::endl;
+    std::cout << "db: " << dxb      << "\t\t" << dyb      << "\t\t" << dzb << std::endl;
+    std::cout << "vel: " << v.x     << "\t\t" << v.y      << "\t\t" << v.z << std::endl;
+    std::cout << "dtf: " << dtxf    << "\t\t" << dtyf     << "\t\t" << dtzf << "\t" << std::endl;
+    
+    // debug
+    static unsigned long long cpt = 0;
+    
     // cases where there is no collision
-    if ((dtentry >= dtexit) 
+    if (std::isnan(dtentry)
+    or (dtentry < 0.f)
+    or (dtentry >= dtexit) // allow for getting out of the insides of a box
     or ((dtxf < 0.f) and (dtyf < 0.f) and (dtzf < 0.f)) 
     or (dtxf > 1.f) // going to collide but not this frame 
     or (dtyf > 1.f)
     or (dtzf > 1.f)
     )
     {
+        a.dimensions = buff;
+        std::cout << "----- FALSE ----- " << ++cpt << std::endl;
         return false;
     }
     else // a collision happened
     {
-        std::cout << "------------------------" << std::endl;
-        std::cout << "dt: " << dtentry << "\t" << dtexit << std::endl;
-        std::cout << "ds: " << dxf << "\t" << dyf << "\t" << dzf << std::endl;
-        std::cout << "vel: " << v.x << "\t" << v.y << "\t" << v.z << std::endl;
-        std::cout << dtxf << "\t" << dtyf << "\t" << dtzf << "\t";
-        // std::cout << dtentry << std::endl;
         // collision response
         int i = math::maxindex(dtxf, dtyf, dtzf);
         
         // only restraint one axis
-        if      (i == 1) 
+        if (i == 1) 
         {
-            v.x *= (dtentry);// - 0.001f); // - 0.0001 -> avoid staying in collision state after resolution
+            v.x *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// // - 0.0001 -> avoid staying in collision state after resolution
             std::cout << "New v.x " << v.x << std::endl;
         }
         else if (i == 2) 
         {
-            v.y *= (dtentry);// - 0.001f);
+            v.y *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
             std::cout << "New v.y " << v.y << std::endl;
         }
         else if (i == 3) 
         {
-            v.z *= (dtentry);// - 0.001f);
+            v.z *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
             std::cout << "New v.z " << v.z << std::endl;
         }
         
+        std::cout << "----- TRUE  ----- " << ++cpt << std::endl;
         return true;
     }
 }

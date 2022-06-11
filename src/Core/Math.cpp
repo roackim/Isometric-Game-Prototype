@@ -7,11 +7,13 @@
 namespace math
 {
 
+    // true if > 0
     bool signbool(float f)
     {
         return f >= 0.f;   
     }
     
+    // returns [-1.f ; 1.f]
     float sign(float f)
     {
         if (f >= 0.f) return 1.f;
@@ -81,7 +83,6 @@ namespace math
         else if (b >= a and b >= c) return 2;
         return 3;
     }
-
 
     float CosAngle(sf::Vector2f v, sf::Vector2f k)
     {
