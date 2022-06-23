@@ -10,10 +10,21 @@
 void ecs::system::computeVelocities(sf::Time& dt)
 {
     auto v = ecs::entity::filter<Movement>();
-    
     for (uint e : v)
     {
-        Movement& mv = ecs::component::get<Movement>(e);   
+        Movement& mv = ecs::component::get<Movement>(e);
+        std::cout << mv.velocity.x << ", " << mv.velocity.y << ", " << mv.velocity.z << std::endl;
+        
+        if (ecs::entity::has<Hitbox>(e))
+        {
+            Hitbox& h = ecs::component::get<Hitbox>(e);
+            if (not h.gravity) continue;   
+            
+            mv.velocity.z -= 0.65;
+            
+            if (mv.velocity.z < -14) mv.velocity.z = -14;
+        }
+        
         mv.delta = mv.velocity * dt.asSeconds();
     }
 }

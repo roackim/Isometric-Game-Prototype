@@ -20,6 +20,7 @@ struct Hitbox
     sf::Vector3f dimensions;
     sf::Vector3f position;
     
+    bool gravity = false;
     bool mode = false;
     
     Hitbox(sf::Vector3f d_, sf::Vector3f p_)

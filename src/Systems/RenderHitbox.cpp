@@ -8,17 +8,6 @@
 #include "Core/Isometric.h"
 
 
-void ecs::system::renderHitboxes(sf::RenderTarget& target, sf::RenderStates states)
-{
-    auto entities = ecs::entity::filter<Hitbox>();
-
-    for (auto& eid : entities)
-    {
-        // renderHitboxWire(ecs::component::get<Hitbox>(eid), target, states);
-        renderHitboxFull(ecs::component::get<Hitbox>(eid), target, states);
-    }
-}
-
 void ecs::system::renderHitboxWire(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states)
 {
     
@@ -43,17 +32,18 @@ void ecs::system::renderHitboxWire(const Hitbox& hitbox, sf::RenderTarget& targe
 
     const sf::Vector2f& p = hitboxVertex[0].position;
     // // // define the color of the triangle's points
-    // hitboxVertex[0].color  = color;
-    // hitboxVertex[1].color  = color;
-    // hitboxVertex[2].color  = color;
-    // hitboxVertex[3].color  = color;
-    // hitboxVertex[4].color  = color;
-    // hitboxVertex[5].color  = color;
-    // hitboxVertex[6].color  = color;
-    // hitboxVertex[7].color  = color;
-    // hitboxVertex[8].color  = color;
-    // hitboxVertex[9].color  = color;
-    // hitboxVertex[10].color = color;
+    sf::Color c = sf::Color(0xffedd0ff);
+    hitboxVertex[0].color  = c;
+    hitboxVertex[1].color  = c;
+    hitboxVertex[2].color  = c;
+    hitboxVertex[3].color  = c;
+    hitboxVertex[4].color  = c;
+    hitboxVertex[5].color  = c;
+    hitboxVertex[6].color  = c;
+    hitboxVertex[7].color  = c;
+    hitboxVertex[8].color  = c;
+    hitboxVertex[9].color  = c;
+    hitboxVertex[10].color = c;
     
     sf::VertexArray shadow(sf::LineStrip, 5);
     
@@ -65,18 +55,18 @@ void ecs::system::renderHitboxWire(const Hitbox& hitbox, sf::RenderTarget& targe
     shadow[3].position  = isometric::getProjection(start2 + sf::Vector3f(d.x,   0,   0));
     shadow[4].position  = isometric::getProjection(start2 + sf::Vector3f(d.x, d.y,   0));
     
-    // shadow[0].color  = sf::Color::Red;
-    // shadow[1].color  = sf::Color::White;
-    // shadow[2].color  = sf::Color::Blue;
-    // shadow[3].color  = sf::Color::White;
-    // shadow[4].color  = sf::Color::Cyan;
+    shadow[0].color  = c;
+    shadow[1].color  = c;
+    shadow[2].color  = c;
+    shadow[3].color  = c;
+    shadow[4].color  = c;
     
     target.draw(shadow, states);
     target.draw(hitboxVertex, states);
     
 }
 
-void ecs::system::renderHitboxFull(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states)
+void ecs::system::renderHitboxFull(const Hitbox& hitbox, sf::RenderTarget& target, sf::RenderStates states, bool black)
 {
     const sf::Vector3f& d = hitbox.dimensions;
     sf::Vector3f start = hitbox.position - sf::Vector3f(d.x, d.y, 0)/2.f;
@@ -143,24 +133,24 @@ void ecs::system::renderHitboxFull(const Hitbox& hitbox, sf::RenderTarget& targe
     // shadow[3].color  = sf::Color::White;
     // shadow[4].color  = sf::Color::Cyan;
     
-    if (hitbox.mode == true)
+    if (black == true)
     {
-        auto color = sf::Color(0x00000000);
-        
-        quad[0].color  = color;
-        quad[1].color  = color;
-        quad[2].color  = color;
-        quad[3].color  = color;
-        quad[4].color  = color;
-        quad[5].color  = color;
-        quad[6].color  = color;
-        quad[7].color  = color;
-        quad[8].color  = color;
-        quad[9].color  = color;
-        quad[10].color = color;
-        quad[11].color = color;
+        auto black_color = sf::Color(0x00000000);
+        // 
+        quad[0].color  = black_color;
+        quad[1].color  = black_color;
+        quad[2].color  = black_color;
+        quad[3].color  = black_color;
+        quad[4].color  = black_color;
+        quad[5].color  = black_color;
+        quad[6].color  = black_color;
+        quad[7].color  = black_color;
+        quad[8].color  = black_color;
+        quad[9].color  = black_color;
+        quad[10].color = black_color;
+        quad[11].color = black_color;
     }
     
-    target.draw(shadow, states);
+    if (not black) target.draw(shadow, states);
     target.draw(quad, sf::BlendNone);
 }

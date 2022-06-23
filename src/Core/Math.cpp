@@ -14,6 +14,14 @@ namespace math
     }
     
     // returns [-1.f ; 1.f]
+    float strictSign(float f)
+    {
+        if (f == 0.f) return f;
+        if (f > 0.f) return 1.f;
+        return -1.f;
+    }
+    
+    
     float sign(float f)
     {
         if (f >= 0.f) return 1.f;

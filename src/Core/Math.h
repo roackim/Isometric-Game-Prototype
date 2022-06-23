@@ -10,6 +10,8 @@ bool signbool(float f);
 
 float sign(float f);
 
+float strictSign(float f);
+
 float abs(float f);
 
 float dist(const v3f& a, const v3f& b);

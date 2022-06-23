@@ -15,9 +15,14 @@ void ecs::system::renderer::renderEntities(sf::RenderTarget& target, sf::RenderS
     // for (unsigned i = v.size(); i-- > 0; )
     for (uint i = entities.size(); i-- > 0; )
     {
-
-        ecs::system::renderHitboxFull(ecs::component::get<Hitbox>(entities[i]), target, states);
-        // ecs::system::renderHitboxWire(ecs::component::get<Hitbox>(e), target, states);   
+        Hitbox& h = ecs::component::get<Hitbox>(entities[i]);
+        if (h.mode == true)
+        {
+            ecs::system::renderHitboxFull(h, target, states, true);
+            ecs::system::renderHitboxWire(h, target, states);   
+        }
+        else 
+            ecs::system::renderHitboxFull(h, target, states);
     }
 }
 

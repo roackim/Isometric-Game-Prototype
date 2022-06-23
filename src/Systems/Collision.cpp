@@ -38,7 +38,7 @@ void ecs::system::applyCollisions() // TODO implement range checks, to avoid che
             }
             else // second entity is static
             {
-                std::cout << ">>> " << e1 << " against " << e2 << " <<<" <<std::endl;
+                // std::cout << ">>> " << e1 << " against " << e2 << " <<<" <<std::endl;
                 sweptAABB(h1, mv.delta, h2, dist);
             }   
         }
@@ -55,10 +55,8 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
     
     // TODO please fix this, this is horrible
     // shrinks the slightest possible the hitbox of the moving entity to avoid bound bug
-    v3f buff = a.dimensions;
-    a.dimensions *= (1.f - std::numeric_limits<float>::epsilon());
     
-    std::cout << a.dimensions.x << std::endl;
+    // std::cout << a.dimensions.x << std::endl;
     
     // a is considered on the left by default
     dxf = (b.position.x - b.dimensions.x/2) - (a.position.x + a.dimensions.x/2);
@@ -93,18 +91,22 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
     float dtentry = math::max(dtxf, dtyf, dtzf);
     float dtexit  = math::min(dtxb, dtyb, dtzb);
     
-    std::cout << "dt: " << dtentry  << "\t\t" << dtexit   << std::endl;
-    std::cout << "df: " << dxf      << "\t\t" << dyf      << "\t\t" << dzf << std::endl;
-    std::cout << "db: " << dxb      << "\t\t" << dyb      << "\t\t" << dzb << std::endl;
-    std::cout << "vel: " << v.x     << "\t\t" << v.y      << "\t\t" << v.z << std::endl;
-    std::cout << "dtf: " << dtxf    << "\t\t" << dtyf     << "\t\t" << dtzf << "\t" << std::endl;
+    float dx = math::closestToZero(dxf, dxb);
+    float dy = math::closestToZero(dyf, dyb);
+    float dz = math::closestToZero(dzf, dzb);
+    
+    std::cout << "dt: " << dtentry  << "\t\t" << dtexit << std::endl;
+    std::cout << "df: " << dxf      << "\t\t" << dyf    << "\t\t" << dzf << std::endl;
+    std::cout << "db: " << dxb      << "\t\t" << dyb    << "\t\t" << dzb << std::endl;
+    std::cout << "delta: " << v.x     << "\t\t" << v.y    << "\t\t" << v.z << std::endl;
+    std::cout << "me: "  << dx      << "\t\t" << dy     << "\t\t" << dz << std::endl;
+    std::cout << "dtf: " << dtxf    << "\t\t" << dtyf   << "\t\t" << dtzf << "\t" << std::endl;
     
     // debug
     static unsigned long long cpt = 0;
     
     // cases where there is no collision
-    if (std::isnan(dtentry)
-    or (dtentry < 0.f)
+    if ((dtentry < 0.f)
     or (dtentry >= dtexit) // allow for getting out of the insides of a box
     or ((dtxf < 0.f) and (dtyf < 0.f) and (dtzf < 0.f)) 
     or (dtxf > 1.f) // going to collide but not this frame 
@@ -112,7 +114,6 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
     or (dtzf > 1.f)
     )
     {
-        a.dimensions = buff;
         std::cout << "----- FALSE ----- " << ++cpt << std::endl;
         return false;
     }
@@ -125,17 +126,17 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
         if (i == 1) 
         {
             v.x *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// // - 0.0001 -> avoid staying in collision state after resolution
-            std::cout << "New v.x " << v.x << std::endl;
+            // std::cout << "New v.x " << v.x << std::endl;
         }
         else if (i == 2) 
         {
             v.y *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
-            std::cout << "New v.y " << v.y << std::endl;
+            // std::cout << "New v.y " << v.y << std::endl;
         }
         else if (i == 3) 
         {
             v.z *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
-            std::cout << "New v.z " << v.z << std::endl;
+            // std::cout << "New v.z " << v.z << std::endl;
         }
         
         std::cout << "----- TRUE  ----- " << ++cpt << std::endl;
