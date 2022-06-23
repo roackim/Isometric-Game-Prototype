@@ -12,7 +12,7 @@ SRC_DIR   := src
 LIB = -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lsfml-network 
 
 # C++ flags and options
-CXX := g++ -Isrc -std=c++17 -fmax-errors=1# -O0 -g -pthread -lpthread -Wl,--no-as-needed
+CXX := g++ -Isrc -std=c++17 -fmax-errors=2# -O0 -g -pthread -lpthread -Wl,--no-as-needed
 CPP_FLAGS := -pedantic -Werror -Wall -Wpedantic -Wextra -Wcast-align -Wunused -Wnull-dereference -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wnon-virtual-dtor -Wcast-qual -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wnoexcept -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo -Wstrict-null-sentinel -Wswitch-default -Wundef -Wno-unused
 #				 	^-> warnigns are now errors
 # Removed: -O3 -Wmissing-declarations -pedantic -Wsign-conversion -Wdouble-promotion -Wuseless-cast
@@ -69,11 +69,11 @@ include $(wildcard $(DEP_FILES))
 # |       UNIT TESTS        |
 # +-------------------------+
 
-TESTS_DIR := tests
-TESTS_BUILD_DIR := tests_obj
+TESTS_DIR := test
+TESTS_BUILD_DIR := test_obj
 
 TESTS_SRCS := $(shell find $(TESTS_DIR) -name *.cpp)
-TESTS_SRCS := $(TESTS_SRCS:tests/%=%)
+TESTS_SRCS := $(TESTS_SRCS:test/%=%)
 TESTS_OBJS := $(TESTS_SRCS:.cpp=.o)
 
 .PHONY: test_all
@@ -89,13 +89,13 @@ test: test_all
 $(TESTS_BUILD_DIR)/%.o: $(TESTS_DIR)/%.cpp
 	@echo \> Compiling..
 	@$(MKDIR_P) $(dir $@)
-	@$(CXX) $(CPP_FLAGS) -Itests $(CPP_FLAGS) -c $< -o $@  -MMD -MP
+	@$(CXX) $(CPP_FLAGS) -Itest $(CPP_FLAGS) -c $< -o $@  -MMD -MP
 
 # linking
 $(TESTS_BUILD_DIR)/$(TARGET): $(OBJS:%=$(BUILD_DIR)/%) $(TESTS_OBJS:%=$(TESTS_BUILD_DIR)/%)
 	@echo \> Building test..
 	@$(MKDIR_P) $(dir $@)
-	@$(CXX) $(CPP_FLAGS) -Itests $(OBJS:%=$(BUILD_DIR)/%) $(TESTS_OBJS:%=$(TESTS_BUILD_DIR)/%) -o $@ $(LIB)
+	@$(CXX) $(CPP_FLAGS) -Itest $(OBJS:%=$(BUILD_DIR)/%) $(TESTS_OBJS:%=$(TESTS_BUILD_DIR)/%) -o $@ $(LIB)
 
 
 # Tests Dependencies

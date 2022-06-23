@@ -6,50 +6,12 @@
 #include "Components/Movement.hpp"
 #include "Core/Math.h"
 
-static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist);
-
-void ecs::system::applyCollisions() // TODO implement range checks, to avoid checking against everyone
-{
-    // ecs::component::get<HitBox(entity_id);
-    float speed = 7.f;
-    auto v = ecs::entity::filter<Movement, Hitbox>();
-    auto v2 = ecs::entity::filter<Hitbox>();
-    
-    for (uint e1 : v)
-    {
-        if (ecs::component::get<Movement>(e1).velocity == sf::Vector3f(0,0,0)) // e1 is cappable of moving, but is static
-        {
-            continue; // skip iteration   
-        }
-        
-        float dist = 0.f;
-        auto& mv = ecs::component::get<Movement>(e1);
-        auto& h1  = ecs::component::get<Hitbox>(e1);
-        for (uint e2 : v2)
-        {
-            if (e1 == e2) continue; // avoid checking collisions against self
-            
-            auto& h2  = ecs::component::get<Hitbox>(e2);
-            
-            if (ecs::entity::has<Movement>(e2)) // both entities are moving
-            {
-                // TODO properly 
-                bool res = sweptAABB(h1, mv.delta, h2, dist);
-            }
-            else // second entity is static
-            {
-                // std::cout << ">>> " << e1 << " against " << e2 << " <<<" <<std::endl;
-                sweptAABB(h1, mv.delta, h2, dist);
-            }   
-        }
-    }
-}
-
-
 
 // A is tested against B, this assumes B is static
-static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
+static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
 {
+    sf::Vector3f& v = mv.delta;
+    
     float dxf, dyf, dzf; // difference, between nearest edges 
     float dxb, dyb, dzb; // difference, between furthest edges
     
@@ -96,10 +58,10 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
     float dz = math::closestToZero(dzf, dzb);
     
     std::cout << "dt: " << dtentry  << "\t\t" << dtexit << std::endl;
-    std::cout << "df: " << dxf      << "\t\t" << dyf    << "\t\t" << dzf << std::endl;
-    std::cout << "db: " << dxb      << "\t\t" << dyb    << "\t\t" << dzb << std::endl;
+    // std::cout << "df: " << dxf      << "\t\t" << dyf    << "\t\t" << dzf << std::endl;
+    // std::cout << "db: " << dxb      << "\t\t" << dyb    << "\t\t" << dzb << std::endl;
     std::cout << "delta: " << v.x     << "\t\t" << v.y    << "\t\t" << v.z << std::endl;
-    std::cout << "me: "  << dx      << "\t\t" << dy     << "\t\t" << dz << std::endl;
+    // std::cout << "me: "  << dx      << "\t\t" << dy     << "\t\t" << dz << std::endl;
     std::cout << "dtf: " << dtxf    << "\t\t" << dtyf   << "\t\t" << dtzf << "\t" << std::endl;
     
     // debug
@@ -126,20 +88,61 @@ static bool sweptAABB(Hitbox& a, sf::Vector3f& v, const Hitbox& b, float& dist)
         if (i == 1) 
         {
             v.x *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// // - 0.0001 -> avoid staying in collision state after resolution
-            // std::cout << "New v.x " << v.x << std::endl;
+            mv.velocity.x = 0;
+            std::cout << "New v.x " << v.x << std::endl;
         }
         else if (i == 2) 
         {
             v.y *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
-            // std::cout << "New v.y " << v.y << std::endl;
+            mv.velocity.y = 0;
+            std::cout << "New v.y " << v.y << std::endl;
         }
         else if (i == 3) 
         {
             v.z *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
-            // std::cout << "New v.z " << v.z << std::endl;
+            mv.velocity.z = 0;
+            std::cout << "New v.z " << v.z << std::endl;
         }
         
-        std::cout << "----- TRUE  ----- " << ++cpt << std::endl;
+        std::cout << "[[[[[ TRUE  ]]]]] " << ++cpt << std::endl;
         return true;
+    }
+}
+
+
+void ecs::system::applyCollisions() // TODO implement range checks, to avoid checking against everyone
+{
+    // ecs::component::get<HitBox(entity_id);
+    float speed = 7.f;
+    auto v = ecs::entity::filter<Movement, Hitbox>();
+    auto v2 = ecs::entity::filter<Hitbox>();
+    
+    for (uint e1 : v)
+    {
+        if (ecs::component::get<Movement>(e1).velocity == sf::Vector3f(0,0,0)) // e1 is cappable of moving, but is static
+        {
+            continue; // skip iteration   
+        }
+        
+        float dist = 0.f;
+        Movement& mv = ecs::component::get<Movement>(e1);
+        Hitbox& h1  = ecs::component::get<Hitbox>(e1);
+        for (uint e2 : v2)
+        {
+            if (e1 == e2) continue; // avoid checking collisions against self
+            
+            auto& h2  = ecs::component::get<Hitbox>(e2);
+            
+            if (ecs::entity::has<Movement>(e2)) // both entities are moving
+            {
+                // TODO properly 
+                bool res = sweptAABB(h1, mv, h2, dist);
+            }
+            else // second entity is static
+            {
+                // std::cout << ">>> " << e1 << " against " << e2 << " <<<" <<std::endl;
+                sweptAABB(h1, mv, h2, dist);
+            }   
+        }
     }
 }

@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 
     // create the window
     sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "Physic Prototype");
-    window.setFramerateLimit(130);
+    window.setFramerateLimit(30);
 
     // used to render at low res
     sf::Sprite render_sprite;
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     uint e8 = ecs::entity::create();
 
     ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(12, 4, 2)), e1);
-    // ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(7, 6, 0)), e2);
+    ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(13, 4, 0)), e2);
     // ecs::component::add(Hitbox(sf::Vector3f(2, 4, 2), sf::Vector3f(10, 4, 0)), e3);
     // ecs::component::add(Hitbox(sf::Vector3f(2, 4, 0.5), sf::Vector3f(14, 6, 0)), e4);
     ecs::component::add(Hitbox(sf::Vector3f(2, 2, 3), sf::Vector3f(12, 2, 0)), e5);
@@ -66,9 +66,10 @@ int main(int argc, char* argv[])
     
     ecs::component::get<Hitbox>(e1).gravity = true; // testing
     
-    ecs::component::get<Hitbox>(e1).mode = true; // testing
-    ecs::component::get<Hitbox>(e5).mode = true; // testing
-    ecs::component::get<Hitbox>(e8).mode = true; // testing
+    ecs::component::get<Hitbox>(e1).mode = false; // testing
+    ecs::component::get<Hitbox>(e2).mode = false;
+    ecs::component::get<Hitbox>(e5).mode = false; // testing
+    ecs::component::get<Hitbox>(e8).mode = false; // testing
     
     std::cout << e1 << ", " << e3 << std::endl;
 
@@ -132,9 +133,10 @@ int main(int argc, char* argv[])
                 ecs::component::get<Hitbox>(e3).dimensions += sf::Vector3f(-growth, -growth, -growth);
             }
 
-            ecs::system::moveWithWASD(event);
 
         }
+        
+        ecs::system::moveWithWASD(event);
 
         ecs::system::computeVelocities(dt);
         ecs::system::applyCollisions();

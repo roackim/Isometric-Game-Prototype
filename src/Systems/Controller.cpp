@@ -28,10 +28,22 @@ void ecs::system::moveWithWASD(sf::Event& event)
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))    vel += sf::Vector3f( 1,  0,  0);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))   vel += sf::Vector3f( 0,  0,  1);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) vel += sf::Vector3f( 0,  0, -1);
-
         
         auto& c = ecs::component::get<Movement>(e);
-        c.velocity = vel * speed;
+        c.velocity += vel * speed;
+        
+        static sf::Clock jump_timer;
+        
+        if (jump_timer.getElapsedTime() > sf::milliseconds(500))
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+            {
+                static uint i = 0;
+                std::cout << "jumping: " << i++ << std::endl;
+                c.velocity.z += 22.f;   
+            jump_timer.restart();
+            }
+        }
     }
 }
 
