@@ -16,7 +16,7 @@ void ecs::system::renderer::renderEntities(sf::RenderTarget& target, sf::RenderS
     for (uint i = entities.size(); i-- > 0; )
     {
         Hitbox& h = ecs::component::get<Hitbox>(entities[i]);
-        if (h.mode == true)
+        if (h.display_mode == true)
         {
             ecs::system::renderHitboxFull(h, target, states, true);
             ecs::system::renderHitboxWire(h, target, states);   

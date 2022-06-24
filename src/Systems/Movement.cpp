@@ -1,6 +1,6 @@
 #include "Movement.h"
 
-#include <SFML/System.hpp>
+#include "Core/Math.h"
 #include "SECS/ECS.hpp"
 
 #include <Components/Movement.hpp>
@@ -15,20 +15,19 @@ void ecs::system::computeVelocities(sf::Time& dt)
         Movement& mv = ecs::component::get<Movement>(e);
         std::cout << "vel: " << mv.velocity.x << ", " << mv.velocity.y << ", " << mv.velocity.z << std::endl;
         
+        // TODO fix this, its messy and unclean
         if (ecs::entity::has<Hitbox>(e))
         {
             Hitbox& h = ecs::component::get<Hitbox>(e);
             if (not h.gravity) continue;   
             
-            mv.velocity.z -= 65 * dt.asSeconds();
+            float gravity_acceleration = -4; // if entity has gravity add Z component to acceleration
+            mv.velocity.z += gravity_acceleration;
         }
         
-        mv.delta = mv.velocity * dt.asSeconds();
-        
-        mv.velocity.x *= 0.25f * (1 - dt.asSeconds());
-        mv.velocity.y *= 0.25f * (1 - dt.asSeconds());
-        mv.velocity.z *= 0.95f * (1 - dt.asSeconds());
-        
+        float dtime = dt.asSeconds();
+        mv.delta = mv.velocity * dtime;
+        mv.velocity *= 0.5f;
     }
 }
 

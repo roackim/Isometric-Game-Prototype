@@ -7,10 +7,27 @@
 #include "Core/Math.h"
 
 
+static float zeroIfSmaller(float a, float x)
+{
+    if (math::abs(a) < x) return 0.0f;
+    return a;
+};
+
+static v3f zeroIfSmaller(v3f v, float x)
+{
+    if (math::abs(v.x) < x) v.x = 0.f;
+    if (math::abs(v.y) < x) v.y = 0.f;
+    if (math::abs(v.z) < x) v.z = 0.f;
+    
+    return v;
+}
+
 // A is tested against B, this assumes B is static
 static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
 {
     sf::Vector3f& v = mv.delta;
+    
+    v = zeroIfSmaller(v, 0.00001f);
     
     float dxf, dyf, dzf; // difference, between nearest edges 
     float dxb, dyb, dzb; // difference, between furthest edges
@@ -32,7 +49,7 @@ static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
     
     // a is considered on bottom by default
     dzf = (b.position.z) - (a.position.z + a.dimensions.z);
-    dzb = (b.position.z + b.dimensions.z) - (a.position.z);
+    dzb = (b.position.z + b.dimensions.z) - (a.position.z); 
     if (v.z < 0.f) math::swap(dzf, dzb);
     
     // used to compute time of collision
@@ -49,13 +66,20 @@ static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
     dtzf = dzf / v.z; // z
     dtzb = dzb / v.z;
     
+    
+    // fix traversing bug
+    dtxf = zeroIfSmaller(dtxf, 0.0001f);
+    dtyf = zeroIfSmaller(dtyf, 0.0001f);
+    dtzf = zeroIfSmaller(dtzf, 0.0001f);
+    
     // determine where the constraint comes from
     float dtentry = math::max(dtxf, dtyf, dtzf);
     float dtexit  = math::min(dtxb, dtyb, dtzb);
     
-    float dx = math::closestToZero(dxf, dxb);
-    float dy = math::closestToZero(dyf, dyb);
-    float dz = math::closestToZero(dzf, dzb);
+    // apparently useless
+    // float dx = math::closestToZero(dxf, dxb);
+    // float dy = math::closestToZero(dyf, dyb);
+    // float dz = math::closestToZero(dzf, dzb);
     
     std::cout << "dt: " << dtentry  << "\t\t" << dtexit << std::endl;
     // std::cout << "df: " << dxf      << "\t\t" << dyf    << "\t\t" << dzf << std::endl;

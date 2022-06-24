@@ -9,7 +9,7 @@
 void ecs::system::moveWithWASD(sf::Event& event)
 {
     // ecs::component::get<HitBox(entity_id);
-    float speed = 7.f;
+    float speed = 5.f;
     auto v = ecs::entity::filter<Movement, Controller>();
     
     for (uint e : v)
@@ -40,8 +40,8 @@ void ecs::system::moveWithWASD(sf::Event& event)
             {
                 static uint i = 0;
                 std::cout << "jumping: " << i++ << std::endl;
-                c.velocity.z += 22.f;   
-            jump_timer.restart();
+                c.velocity.z += 48.f;   
+                jump_timer.restart();
             }
         }
     }
