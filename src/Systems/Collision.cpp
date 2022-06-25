@@ -22,20 +22,24 @@ static v3f zeroIfSmaller(v3f v, float x)
     return v;
 }
 
+static bool almostZero(float f)
+{
+    // std::cout << f << " < " << "0.00001f = " << (math::abs(f) < 0.00001f) << std::endl;
+    if (math::abs(f) < 0.00001f) return true;
+    return false;   
+}
+
 // A is tested against B, this assumes B is static
 static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
 {
     sf::Vector3f& v = mv.delta;
     
+    std::cout << "  step: x: " << v.x << ", y: " << v.y << ", z: " << v.z << std::endl;
+
     v = zeroIfSmaller(v, 0.00001f);
     
     float dxf, dyf, dzf; // difference, between nearest edges 
     float dxb, dyb, dzb; // difference, between furthest edges
-    
-    // TODO please fix this, this is horrible
-    // shrinks the slightest possible the hitbox of the moving entity to avoid bound bug
-    
-    // std::cout << a.dimensions.x << std::endl;
     
     // a is considered on the left by default
     dxf = (b.position.x - b.dimensions.x/2) - (a.position.x + a.dimensions.x/2);
@@ -72,24 +76,61 @@ static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
     dtyf = zeroIfSmaller(dtyf, 0.0001f);
     dtzf = zeroIfSmaller(dtzf, 0.0001f);
     
+    
+    // edge fix
+    uint sum = almostZero(v.x) + almostZero(v.y) + almostZero(v.z);
+    
+    float ax1 = a.position.x - a.dimensions.x / 2;
+    float ax2 = a.position.x + a.dimensions.x / 2;
+    float ay1 = a.position.y - a.dimensions.y / 2;
+    float ay2 = a.position.y + a.dimensions.y / 2;
+    float az1 = a.position.z;
+    float az2 = a.position.z + a.dimensions.z;
+    
+    float bx1 = b.position.x - b.dimensions.x / 2;
+    float bx2 = b.position.x + b.dimensions.x / 2;
+    float by1 = b.position.y - b.dimensions.y / 2;
+    float by2 = b.position.y + b.dimensions.y / 2;
+    float bz1 = b.position.z;
+    float bz2 = b.position.z + b.dimensions.z;
+    
+    bool xout = ax1 >= bx2 or ax2 <= bx1;
+    bool yout = ay1 >= by2 or ay2 <= by1;
+    bool zout = az1 >= bz2 or az2 <= bz1;
+    
+    std::cout << "  out: " << xout << " " << yout << " " << zout << std::endl;
+    std::cout << "  zro: " << almostZero(v.x) << " " << almostZero(v.y) << " " << almostZero(v.z) << std::endl;
+    
+    if (sum == 2)
+    {
+        if (!almostZero(v.z) and (xout or yout))
+        {
+            std::cout << "  > FALSE: preventive false" << std::endl;
+            return false;
+        }
+        if (!almostZero(v.x) and (yout or zout))
+        {
+            std::cout << "  > FALSE: preventive false" << std::endl;
+            return false;
+        }
+        if (!almostZero(v.y) and (xout or zout))
+        {
+            std::cout << "  > FALSE: preventive false" << std::endl;
+            return false;
+        }
+    }
+    
     // determine where the constraint comes from
     float dtentry = math::max(dtxf, dtyf, dtzf);
     float dtexit  = math::min(dtxb, dtyb, dtzb);
     
-    // apparently useless
-    // float dx = math::closestToZero(dxf, dxb);
-    // float dy = math::closestToZero(dyf, dyb);
-    // float dz = math::closestToZero(dzf, dzb);
     
-    std::cout << "dt: " << dtentry  << "\t\t" << dtexit << std::endl;
-    // std::cout << "df: " << dxf      << "\t\t" << dyf    << "\t\t" << dzf << std::endl;
-    // std::cout << "db: " << dxb      << "\t\t" << dyb    << "\t\t" << dzb << std::endl;
-    std::cout << "delta: " << v.x     << "\t\t" << v.y    << "\t\t" << v.z << std::endl;
-    // std::cout << "me: "  << dx      << "\t\t" << dy     << "\t\t" << dz << std::endl;
-    std::cout << "dtf: " << dtxf    << "\t\t" << dtyf   << "\t\t" << dtzf << "\t" << std::endl;
-    
-    // debug
-    static unsigned long long cpt = 0;
+    std::cout << "  dt: " << dtentry    << "  \t\t" << dtexit << std::endl;
+    // std::cout << "  df: " << dxf        << "  \t\t" << dyf    << "\t\t" << dzf << std::endl;
+    // std::cout << "  db: " << dxb        << "  \t\t" << dyb    << "\t\t" << dzb << std::endl;
+    std::cout << "  delta: " << v.x     << "  \t\t" << v.y    << "\t\t" << v.z << std::endl;
+    // std::cout << "me: "  << dx       << "  \t\t" << dy     << "\t\t" << dz << std::endl;
+    std::cout << "  dtf: " << dtxf      << "  \t\t" << dtyf   << "\t\t" << dtzf << "\t" << std::endl;
     
     // cases where there is no collision
     if ((dtentry < 0.f)
@@ -100,7 +141,7 @@ static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
     or (dtzf > 1.f)
     )
     {
-        std::cout << "----- FALSE ----- " << ++cpt << std::endl;
+        std::cout << "  > FALSE: " << std::endl;
         return false;
     }
     else // a collision happened
@@ -111,24 +152,36 @@ static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
         // only restraint one axis
         if (i == 1) 
         {
+            if (almostZero(v.y) and yout) [[unlikely]]
+            {
+                std::cout << "  > FALSE: revaluated" << std::endl;
+                return false;
+            }
+            
             v.x *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// // - 0.0001 -> avoid staying in collision state after resolution
             mv.velocity.x = 0;
-            std::cout << "New v.x " << v.x << std::endl;
+            std::cout << "  new v.x = " << v.x << std::endl;
         }
         else if (i == 2) 
         {
+            if (almostZero(v.x) and xout) [[unlikely]]
+            {
+                std::cout << "  > FALSE: revaluated" << std::endl;
+                return false;
+            }
+            
             v.y *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
             mv.velocity.y = 0;
-            std::cout << "New v.y " << v.y << std::endl;
+            std::cout << "  new v.y = " << v.y << std::endl;
         }
         else if (i == 3) 
         {
             v.z *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
             mv.velocity.z = 0;
-            std::cout << "New v.z " << v.z << std::endl;
+            std::cout << "  new v.z = " << v.z << std::endl;
         }
         
-        std::cout << "[[[[[ TRUE  ]]]]] " << ++cpt << std::endl;
+        std::cout << "  > TRUE:  " << std::endl;
         return true;
     }
 }
@@ -143,7 +196,7 @@ void ecs::system::applyCollisions() // TODO implement range checks, to avoid che
     
     for (uint e1 : v)
     {
-        if (ecs::component::get<Movement>(e1).velocity == sf::Vector3f(0,0,0)) // e1 is cappable of moving, but is static
+        if (ecs::component::get<Movement>(e1).delta == sf::Vector3f(0,0,0)) // e1 is cappable of moving, but is static
         {
             continue; // skip iteration   
         }
@@ -164,7 +217,7 @@ void ecs::system::applyCollisions() // TODO implement range checks, to avoid che
             }
             else // second entity is static
             {
-                // std::cout << ">>> " << e1 << " against " << e2 << " <<<" <<std::endl;
+                std::cout << "[[[ " << e1 << " against " << e2 << " ]]]" <<std::endl;
                 sweptAABB(h1, mv, h2, dist);
             }   
         }

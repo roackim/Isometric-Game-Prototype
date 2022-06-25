@@ -13,7 +13,12 @@ void ecs::system::computeVelocities(sf::Time& dt)
     for (uint e : v)
     {
         Movement& mv = ecs::component::get<Movement>(e);
-        std::cout << "vel: " << mv.velocity.x << ", " << mv.velocity.y << ", " << mv.velocity.z << std::endl;
+        
+        std::cout << "  vel: " << mv.velocity.x     << "  \t\t" << mv.velocity.y    << "\t\t" << mv.velocity.z << " >>>> " << dt.asMilliseconds() << std::endl;
+        
+        float dtime = dt.asSeconds();
+        
+        mv.acceleration = {0,0,0};
         
         // TODO fix this, its messy and unclean
         if (ecs::entity::has<Hitbox>(e))
@@ -21,13 +26,23 @@ void ecs::system::computeVelocities(sf::Time& dt)
             Hitbox& h = ecs::component::get<Hitbox>(e);
             if (not h.gravity) continue;   
             
-            float gravity_acceleration = -4; // if entity has gravity add Z component to acceleration
-            mv.velocity.z += gravity_acceleration;
+            mv.acceleration.z = -30.f;
         }
+        std::cout << "  vel : x: " << mv.velocity.x << ", y: " << mv.velocity.y << ", z: " << mv.velocity.z << std::endl;
         
-        float dtime = dt.asSeconds();
+        // mv.acceleration = -mv.velocity * std::pow(0.2f, dtime);
+        mv.velocity += mv.acceleration * dtime;
         mv.delta = mv.velocity * dtime;
-        mv.velocity *= 0.5f;
+        
+        // friction
+        // mv.velocity.z += -(mv.velocity.z - mv.velocity.z * std::pow(0.1f, dtime));
+        // mv.velocity.z += -(1 - std::pow(0.1f, dtime)) * mv.velocity.z;
+        float power = dt.asSeconds();
+        float friction = std::pow(0.1f, power);
+        
+        mv.velocity.z *= friction;
+        mv.velocity.y = 0;
+        mv.velocity.x = 0;
     }
 }
 

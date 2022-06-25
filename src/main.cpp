@@ -20,14 +20,12 @@ const uint SCALE = 3;
 const uint WIN_WIDTH = 800;
 const uint WIN_HEIGHT = 600;
 
-bool Hitbox::display_mode = 1;
-
 int main(int argc, char* argv[])
 {
 
     // create the window
     sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "Physic Prototype");
-    window.setFramerateLimit(12);
+    window.setFramerateLimit(140);
 
     // used to render at low res
     sf::Sprite render_sprite;
@@ -45,25 +43,24 @@ int main(int argc, char* argv[])
     uint e1 = ecs::entity::create();
     uint e2 = ecs::entity::create();
     uint e3 = ecs::entity::create();
-    
     uint e4 = ecs::entity::create();
     uint e5 = ecs::entity::create();
-    
     uint e6 = ecs::entity::create();
     uint e7 = ecs::entity::create();
-    
     uint e8 = ecs::entity::create();
 
     ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(12, 4, 2)), e1);
-    // ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1), sf::Vector3f(13, 4, 0)), e2);
-    // ecs::component::add(Hitbox(sf::Vector3f(2, 4, 2), sf::Vector3f(10, 4, 0)), e3);
+    ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1.5), sf::Vector3f(16, 2, 0)), e2);
+    ecs::component::add(Hitbox(sf::Vector3f(1.5, 1.5, 4), sf::Vector3f(13, -2, 0)), e3);
+    
+    ecs::component::add(Hitbox(sf::Vector3f(1, 1, 1.5), sf::Vector3f(18, 2, 0)), e4);
     // ecs::component::add(Hitbox(sf::Vector3f(2, 4, 0.5), sf::Vector3f(14, 6, 0)), e4);
     ecs::component::add(Hitbox(sf::Vector3f(2, 2, 3), sf::Vector3f(12, 2, 0)), e5);
     
     // ecs::component::add(Hitbox(sf::Vector3f(0.5, 1, 0.5), sf::Vector3f(5, -4, 0)), e6);
     // ecs::component::add(Hitbox(sf::Vector3f(1, 3, 0.5), sf::Vector3f(20, 8, 0)), e7);
     
-    ecs::component::add(Hitbox(sf::Vector3f(10, 10, 1), sf::Vector3f(13, 2, -1)), e8);
+    ecs::component::add(Hitbox(sf::Vector3f(12, 12, 1), sf::Vector3f(13, 2, -1)), e8);
     ecs::component::get<Hitbox>(e1).gravity = true; // testing
     
     
@@ -102,7 +99,7 @@ int main(int argc, char* argv[])
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
             {
 
-                if (swap_timer.getElapsedTime() > sf::milliseconds(100))
+                if (swap_timer.getElapsedTime() > sf::milliseconds(140))
                 {
                     if (ecs::entity::has<Controller>(e2))
                     {
@@ -122,14 +119,14 @@ int main(int argc, char* argv[])
             {
                 float growth = 0.1f;
                 // ecs::component::get<Hitbox>(e1).dimensions += sf::Vector3f(growth, growth, growth);
-                window.setFramerateLimit(144);
+                window.setFramerateLimit(100);
                 
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::O))
             {
                 float growth = 0.1f;
                 // ecs::component::get<Hitbox>(e1).dimensions += sf::Vector3f(-growth, -growth, -growth);
-                window.setFramerateLimit(32);
+                window.setFramerateLimit(10);
                 
             }
 

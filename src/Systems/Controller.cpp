@@ -40,7 +40,7 @@ void ecs::system::moveWithWASD(sf::Event& event)
             {
                 static uint i = 0;
                 std::cout << "jumping: " << i++ << std::endl;
-                c.velocity.z += 48.f;   
+                c.velocity.z += 15.f;   
                 jump_timer.restart();
             }
         }
