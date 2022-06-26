@@ -108,4 +108,23 @@ namespace math
     {
         return std::sqrt(v.x*v.x + v.y*v.y);   
     }
+    
+    // clamp to 1
+    v2f clamp(v2f v, float value)
+    {
+        float norm = std::sqrt(v.x * v.x + v.y * v.y);
+        
+        if (v.x == 0.0 and v.y == 0.0) return v;
+        
+        if (norm > value)
+        {
+            return v * (value / norm);   
+        }
+        return v;
+    }
+    
+    v3f addZAxis(v2f v)
+    {
+        return {v.x, v.y, 0};
+    }
 }

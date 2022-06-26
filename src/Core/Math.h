@@ -38,4 +38,9 @@ namespace math
 
     float norm(v2f v);
 
+    v2f clamp(v2f v, float value);
+    
+    // returns a 3D vector, adding 0 to the Z axis
+    v3f addZAxis(v2f v);
+    
 }

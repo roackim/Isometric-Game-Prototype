@@ -22,7 +22,7 @@ struct Hitbox
     
     bool gravity = false;
     
-    static const bool display_mode = 1;
+    static const uint display_mode = 2;
     
     Hitbox(sf::Vector3f d_, sf::Vector3f p_)
     : dimensions(d_), position(p_) {}

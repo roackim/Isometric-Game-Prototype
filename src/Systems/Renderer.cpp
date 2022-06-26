@@ -16,10 +16,14 @@ void ecs::system::renderer::renderEntities(sf::RenderTarget& target, sf::RenderS
     for (uint i = entities.size(); i-- > 0; )
     {
         Hitbox& h = ecs::component::get<Hitbox>(entities[i]);
-        if (h.display_mode == true)
+        if (h.display_mode == 1)
         {
             ecs::system::renderHitboxFull(h, target, states, true);
             ecs::system::renderHitboxWire(h, target, states);   
+        }
+        else if (h.display_mode == 2)
+        {
+            ecs::system::renderHitboxFullWithOutline(h, target, states);
         }
         else 
             ecs::system::renderHitboxFull(h, target, states);

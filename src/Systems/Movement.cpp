@@ -14,7 +14,9 @@ void ecs::system::computeVelocities(sf::Time& dt)
     {
         Movement& mv = ecs::component::get<Movement>(e);
         
-        std::cout << "  vel: " << mv.velocity.x     << "  \t\t" << mv.velocity.y    << "\t\t" << mv.velocity.z << " >>>> " << dt.asMilliseconds() << std::endl;
+        float velnorm = mv.velocity.x * mv.velocity.x + mv.velocity.y * mv.velocity.y + mv.velocity.z * mv.velocity.z;
+        velnorm = std::sqrt(velnorm);
+        std::cout << "  vel: " << mv.velocity.x  << "  \t" << mv.velocity.y << "\t" << mv.velocity.z << " >>>> " << velnorm << std::endl;
         
         float dtime = dt.asSeconds();
         
@@ -26,9 +28,9 @@ void ecs::system::computeVelocities(sf::Time& dt)
             Hitbox& h = ecs::component::get<Hitbox>(e);
             if (not h.gravity) continue;   
             
-            mv.acceleration.z = -30.f;
+            mv.acceleration.z = -35.f;
         }
-        std::cout << "  vel : x: " << mv.velocity.x << ", y: " << mv.velocity.y << ", z: " << mv.velocity.z << std::endl;
+        // std::cout << "  vel : x: " << mv.velocity.x << ", y: " << mv.velocity.y << ", z: " << mv.velocity.z << std::endl;
         
         // mv.acceleration = -mv.velocity * std::pow(0.2f, dtime);
         mv.velocity += mv.acceleration * dtime;

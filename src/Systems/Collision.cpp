@@ -34,51 +34,9 @@ static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
 {
     sf::Vector3f& v = mv.delta;
     
-    std::cout << "  step: x: " << v.x << ", y: " << v.y << ", z: " << v.z << std::endl;
+    // std::cout << "  step: x: " << v.x << ", y: " << v.y << ", z: " << v.z << std::endl;
 
     v = zeroIfSmaller(v, 0.00001f);
-    
-    float dxf, dyf, dzf; // difference, between nearest edges 
-    float dxb, dyb, dzb; // difference, between furthest edges
-    
-    // a is considered on the left by default
-    dxf = (b.position.x - b.dimensions.x/2) - (a.position.x + a.dimensions.x/2);
-    dxb = (b.position.x + b.dimensions.x/2) - (a.position.x - a.dimensions.x/2);    
-    if (v.x < 0.f) math::swap(dxf, dxb); // if a is on the right side, swap
-    
-    // a is considered on the smaller y by default
-    dyf = (b.position.y - b.dimensions.y/2) - (a.position.y + a.dimensions.y/2);
-    dyb = (b.position.y + b.dimensions.y/2) - (a.position.y - a.dimensions.y/2);  
-    if (v.y < 0.f) math::swap(dyf, dyb); // if otherwise swap values
-    
-    // a is considered on bottom by default
-    dzf = (b.position.z) - (a.position.z + a.dimensions.z);
-    dzb = (b.position.z + b.dimensions.z) - (a.position.z); 
-    if (v.z < 0.f) math::swap(dzf, dzb);
-    
-    // used to compute time of collision
-    float dtxf, dtyf, dtzf; // time of collision for each axis 
-    float dtxb, dtyb, dtzb; // time of leaving for each axis
-    
-    // compute time of collision per axis
-    dtxf = dxf / v.x; // x
-    dtxb = dxb / v.x;   
-    
-    dtyf = dyf / v.y; // y
-    dtyb = dyb / v.y;
-    
-    dtzf = dzf / v.z; // z
-    dtzb = dzb / v.z;
-    
-    
-    // fix traversing bug
-    dtxf = zeroIfSmaller(dtxf, 0.0001f);
-    dtyf = zeroIfSmaller(dtyf, 0.0001f);
-    dtzf = zeroIfSmaller(dtzf, 0.0001f);
-    
-    
-    // edge fix
-    uint sum = almostZero(v.x) + almostZero(v.y) + almostZero(v.z);
     
     float ax1 = a.position.x - a.dimensions.x / 2;
     float ax2 = a.position.x + a.dimensions.x / 2;
@@ -94,54 +52,72 @@ static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
     float bz1 = b.position.z;
     float bz2 = b.position.z + b.dimensions.z;
     
+    float dxf, dyf, dzf; // difference, between nearest edges 
+    float dxb, dyb, dzb; // difference, between furthest edges
+    
+    // a is considered on the left by default
+    dxf = bx1 - ax2;
+    dxb = bx2 - ax1;    
+    if (v.x < 0.f) math::swap(dxf, dxb); // if a is on the right side, swap
+    
+    // a is considered on the smaller y by default
+    dyf = by1 - ay2;
+    dyb = by2 - ay1;  
+    if (v.y < 0.f) math::swap(dyf, dyb); // if otherwise swap values
+    
+    // a is considered on bottom by default
+    dzf = bz1 - az2;
+    dzb = bz2 - az1; 
+    if (v.z < 0.f) math::swap(dzf, dzb);
+    
+    // compute estimated time before collision per axis
+    float dtxf = dxf / v.x; // x
+    float dtxb = dxb / v.x;   
+    
+    float dtyf = dyf / v.y; // y
+    float dtyb = dyb / v.y;
+    
+    float dtzf = dzf / v.z; // z
+    float dtzb = dzb / v.z;
+    
+    // fix traversing bug
+    dtxf = zeroIfSmaller(dtxf, 0.0001f);
+    dtyf = zeroIfSmaller(dtyf, 0.0001f);
+    dtzf = zeroIfSmaller(dtzf, 0.0001f);
+    
+    // edge fix
+    uint sum = almostZero(v.x) + almostZero(v.y) + almostZero(v.z);
+    
     bool xout = ax1 >= bx2 or ax2 <= bx1;
     bool yout = ay1 >= by2 or ay2 <= by1;
     bool zout = az1 >= bz2 or az2 <= bz1;
     
-    std::cout << "  out: " << xout << " " << yout << " " << zout << std::endl;
-    std::cout << "  zro: " << almostZero(v.x) << " " << almostZero(v.y) << " " << almostZero(v.z) << std::endl;
-    
-    if (sum == 2)
-    {
-        if (!almostZero(v.z) and (xout or yout))
-        {
-            std::cout << "  > FALSE: preventive false" << std::endl;
-            return false;
-        }
-        if (!almostZero(v.x) and (yout or zout))
-        {
-            std::cout << "  > FALSE: preventive false" << std::endl;
-            return false;
-        }
-        if (!almostZero(v.y) and (xout or zout))
-        {
-            std::cout << "  > FALSE: preventive false" << std::endl;
-            return false;
-        }
-    }
+    // std::cout << "  out: " << xout << " " << yout << " " << zout << std::endl;
+    // std::cout << "  zro: " << almostZero(v.x) << " " << almostZero(v.y) << " " << almostZero(v.z) << std::endl;
     
     // determine where the constraint comes from
     float dtentry = math::max(dtxf, dtyf, dtzf);
     float dtexit  = math::min(dtxb, dtyb, dtzb);
     
     
-    std::cout << "  dt: " << dtentry    << "  \t\t" << dtexit << std::endl;
+    // std::cout << "  dt: " << dtentry    << "  \t\t" << dtexit << std::endl;
     // std::cout << "  df: " << dxf        << "  \t\t" << dyf    << "\t\t" << dzf << std::endl;
     // std::cout << "  db: " << dxb        << "  \t\t" << dyb    << "\t\t" << dzb << std::endl;
-    std::cout << "  delta: " << v.x     << "  \t\t" << v.y    << "\t\t" << v.z << std::endl;
+    // std::cout << "  delta: " << v.x     << "  \t\t" << v.y    << "\t\t" << v.z << std::endl;
     // std::cout << "me: "  << dx       << "  \t\t" << dy     << "\t\t" << dz << std::endl;
-    std::cout << "  dtf: " << dtxf      << "  \t\t" << dtyf   << "\t\t" << dtzf << "\t" << std::endl;
+    // std::cout << "  dtf: " << dtxf      << "  \t\t" << dtyf   << "\t\t" << dtzf << "\t" << std::endl;
     
     // cases where there is no collision
     if ((dtentry < 0.f)
-    or (dtentry >= dtexit) // allow for getting out of the insides of a box
-    or ((dtxf < 0.f) and (dtyf < 0.f) and (dtzf < 0.f)) 
     or (dtxf > 1.f) // going to collide but not this frame 
     or (dtyf > 1.f)
     or (dtzf > 1.f)
+    // useless ?
+    or (dtentry >= dtexit) // allow for getting out of the insides of a box
+    or ((dtxf < 0.f) and (dtyf < 0.f) and (dtzf < 0.f)) 
     )
     {
-        std::cout << "  > FALSE: " << std::endl;
+        // std::cout << "  > FALSE: " << std::endl;
         return false;
     }
     else // a collision happened
@@ -152,36 +128,45 @@ static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
         // only restraint one axis
         if (i == 1) 
         {
-            if (almostZero(v.y) and yout) [[unlikely]]
+            if (almostZero(v.y) and yout) [[unlikely]] // edge fix
             {
-                std::cout << "  > FALSE: revaluated" << std::endl;
+                // std::cout << "  > FALSE: revaluated" << std::endl;
                 return false;
             }
             
-            v.x *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// // - 0.0001 -> avoid staying in collision state after resolution
+            // a collision has happened
+            v.x *= (dtentry);
             mv.velocity.x = 0;
-            std::cout << "  new v.x = " << v.x << std::endl;
+            // std::cout << "  new v.x = " << v.x << std::endl;
         }
         else if (i == 2) 
         {
-            if (almostZero(v.x) and xout) [[unlikely]]
+            if (almostZero(v.x) and xout) [[unlikely]] // edge fix
+            {
+                // std::cout << "  > FALSE: revaluated" << std::endl;
+                return false;
+            }
+            
+            // a collision has happened
+            v.y *= (dtentry);
+            mv.velocity.y = 0;
+            // std::cout << "  new v.y = " << v.y << std::endl;
+        }
+        else if (i == 3) 
+        {
+            if ((almostZero(v.x) or almostZero(v.y)) and (xout or yout)) [[unlikely]] // edge fix
             {
                 std::cout << "  > FALSE: revaluated" << std::endl;
                 return false;
             }
             
-            v.y *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
-            mv.velocity.y = 0;
-            std::cout << "  new v.y = " << v.y << std::endl;
-        }
-        else if (i == 3) 
-        {
-            v.z *= (dtentry); // - 100*std::numeric_limits<float>::epsilon());// - 0.001f);
+            // a collision has happened
+            v.z *= (dtentry);
             mv.velocity.z = 0;
-            std::cout << "  new v.z = " << v.z << std::endl;
+            // std::cout << "  new v.z = " << v.z << std::endl;
         }
         
-        std::cout << "  > TRUE:  " << std::endl;
+        // std::cout << "  > TRUE:  " << std::endl;
         return true;
     }
 }
@@ -217,7 +202,7 @@ void ecs::system::applyCollisions() // TODO implement range checks, to avoid che
             }
             else // second entity is static
             {
-                std::cout << "[[[ " << e1 << " against " << e2 << " ]]]" <<std::endl;
+                // std::cout << "[[[ " << e1 << " against " << e2 << " ]]]" <<std::endl;
                 sweptAABB(h1, mv, h2, dist);
             }   
         }
