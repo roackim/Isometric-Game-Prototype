@@ -16,7 +16,7 @@ void ecs::system::computeVelocities(sf::Time& dt)
         
         float velnorm = mv.velocity.x * mv.velocity.x + mv.velocity.y * mv.velocity.y + mv.velocity.z * mv.velocity.z;
         velnorm = std::sqrt(velnorm);
-        std::cout << "  vel: " << mv.velocity.x  << "  \t" << mv.velocity.y << "\t" << mv.velocity.z << " >>>> " << velnorm << std::endl;
+        // std::cout << "  vel: " << mv.velocity.x  << "  \t" << mv.velocity.y << "\t" << mv.velocity.z << " >>>> " << velnorm << std::endl;
         
         float dtime = dt.asSeconds();
         
@@ -42,11 +42,15 @@ void ecs::system::computeVelocities(sf::Time& dt)
         float power = dt.asSeconds();
         float friction = std::pow(0.1f, power);
         
+        std::cout << friction << std::endl;
+        
         mv.velocity.z *= friction;
         mv.velocity.y = 0;
         mv.velocity.x = 0;
     }
 }
+
+
 
 void ecs::system::moveEntitites()
 {

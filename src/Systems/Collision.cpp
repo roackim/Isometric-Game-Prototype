@@ -154,8 +154,17 @@ static bool sweptAABB(Hitbox& a, Movement& mv, const Hitbox& b, float& dist)
         }
         else if (i == 3) 
         {
-            if ((almostZero(v.x) or almostZero(v.y)) and (xout or yout)) [[unlikely]] // edge fix
-            {
+            // TODO: BUG: allow traversing sometimes
+            if ((almostZero(v.x) and xout) or (almostZero(v.y) and yout)) [[unlikely]] // edge fix
+            {   
+                std::cout << "------------------------" << std::endl;
+                std::cout << "  step: x: " << v.x << ", y: " << v.y << ", z: " << v.z << std::endl;
+                std::cout << "  out: " << xout << " " << yout << " " << zout << std::endl;
+                std::cout << "  zro: " << almostZero(v.x) << " " << almostZero(v.y) << " " << almostZero(v.z) << std::endl;
+                std::cout << "  dt: " << dtentry    << "  \t\t" << dtexit << std::endl;
+                std::cout << "  delta: " << v.x     << "  \t\t" << v.y    << "\t\t" << v.z << std::endl;
+                std::cout << "  dtf: " << dtxf      << "  \t\t" << dtyf   << "\t\t" << dtzf << "\t" << std::endl;
+
                 std::cout << "  > FALSE: revaluated" << std::endl;
                 return false;
             }
