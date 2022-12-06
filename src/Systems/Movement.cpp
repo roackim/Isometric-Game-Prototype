@@ -42,7 +42,7 @@ void ecs::system::computeVelocities(sf::Time& dt)
         float power = dt.asSeconds();
         float friction = std::pow(0.1f, power);
         
-        std::cout << friction << std::endl;
+        // std::cout << friction << std::endl;
         
         mv.velocity.z *= friction;
         mv.velocity.y = 0;

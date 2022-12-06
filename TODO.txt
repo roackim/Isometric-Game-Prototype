@@ -8,6 +8,27 @@
 [X] Implement ECS wrapper (delete an entity and all its components etc..)
     [X] Implement entity signature filling on component addition
 [X] Implement Entity filtering based on signature
-[ ] Implement Systems structure ?
+[X] Implement Systems structure ?
 [ ] Implement a 'Garbage Collector' of some sort -> avoid keeping too many entities
 [ ] Filter with a single argument: use ComponentArray.componentToEntity vector
+
+
+[X] Components add .h files and replace .hpp by .cpp
+    [ ] make maccro .h file that include all components ? 
+[X] Implement AABB collision detection and collision response
+    [X] Moving -> Static
+    [ ] Moving -> Moving
+[ ] Collision callbacks ?
+[X] Implement perspective rendering -> sort drawing order
+
+[ ] Separate Acceleration and Velocity Movement
+[ ] Separate Position from Hitbox
+    [ ] Implement requirements for components ?
+    
+[X] Implement Z axis comparison for renderer
+[X] Implement spatial partitionning for renderer sort
+[ ] Implement way to solve impossible painter problems
+    -> use negative rendering to break the rendering cycle
+
+[X] SOLVE BUG: Collision from under: can get out but not in after Z collision from under
+[X] Gravity: Implement proper acceleration and velocity

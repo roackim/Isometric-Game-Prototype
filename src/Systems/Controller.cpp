@@ -54,8 +54,8 @@ void ecs::system::moveWithWASD(sf::Event& event)
         {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
             {
-                static uint i = 0;
-                std::cout << "jumping: " << i++ << std::endl;
+                // static uint i = 0;
+                // std::cout << "jumping: " << i++ << std::endl;
                 c.velocity.z += 15.f;   
                 jump_timer.restart();
             }
