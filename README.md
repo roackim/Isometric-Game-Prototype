@@ -1,4 +1,4 @@
-# Isometric Game Prototype
+# Isometric Game Engine Prototype
 
 A simple C++ Isometric renderer, with a simple AABB phased collision system, programmed with a custom ECS, following the Data Oriented Paradigm.
 It uses the SFML framework.
